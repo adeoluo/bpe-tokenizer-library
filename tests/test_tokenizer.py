@@ -8,7 +8,10 @@ from bpe_tokenizer_library.evaluation import (
     ROUND_TRIP_CASES,
     compression,
     encode_throughput,
+    fuzz_round_trip_rate,
     is_lossless,
+    pretokenize_is_lossless,
+    random_unicode_cases,
     round_trip_rate,
 )
 from bpe_tokenizer_library.pretokenize import pretokenize
@@ -35,6 +38,28 @@ def test_pretokenize_keeps_leading_spaces() -> None:
 
 def test_pretokenize_separates_digits_and_punctuation() -> None:
     assert pretokenize("abc123!!!") == ["abc", "123", "!!!"]
+
+
+def test_pretokenize_preserves_underscores() -> None:
+    # Regression: underscores were previously dropped because they are word
+    # characters excluded from both the letter class and the naive "other" class.
+    assert pretokenize("a_b") == ["a", "_", "b"]
+    assert pretokenize("__init__") == ["__", "init", "__"]
+    assert pretokenize("_") == ["_"]
+    for case in ("a_b", "__init__", "_", "x_y 1_2", "snake_case"):
+        assert "".join(pretokenize(case)) == case
+
+
+def test_pretokenize_is_lossless_over_random_unicode() -> None:
+    # Property test: the pre-tokenizer must regroup, never drop or add characters.
+    cases = random_unicode_cases(count=3000, seed=0)
+    assert pretokenize_is_lossless(cases)
+
+
+def test_tokenizer_round_trips_random_unicode() -> None:
+    tok = BPETokenizer.train(sample_corpus(), vocab_size=600)
+    cases = random_unicode_cases(count=1000, seed=7)
+    assert fuzz_round_trip_rate(tok, cases) == 1.0
 
 
 def test_training_is_deterministic() -> None:
