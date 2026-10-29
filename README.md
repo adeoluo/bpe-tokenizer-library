@@ -137,6 +137,17 @@ method and tables: [`docs/EVALUATION_REPORT.md`](docs/EVALUATION_REPORT.md).
 - **Data card:** [`docs/DATA_CARD.md`](docs/DATA_CARD.md)
 - **Threat model:** [`docs/THREAT_MODEL.md`](docs/THREAT_MODEL.md)
 
+## Comparison scope
+
+The reported compression and throughput are measured on a small bundled corpus against a raw-byte
+baseline, not against an established tokenizer. This project has **not** been benchmarked against
+[tiktoken](https://github.com/openai/tiktoken) or
+[Hugging Face Tokenizers](https://github.com/huggingface/tokenizers), and it does not claim a speed
+or compression advantage over them: a pure-Python encoder will not match a compiled one on
+wall-clock throughput. What the result establishes is a faithful, lossless implementation of the
+GPT-2 byte-level BPE algorithm. Loading GPT-2's published vocabulary to verify byte-for-byte parity,
+and measuring encode throughput against tiktoken, are the natural next steps.
+
 ## Limitations
 
 - The bundled corpus is small, so learned merges saturate at a few hundred; compression plateaus
@@ -147,6 +158,7 @@ method and tables: [`docs/EVALUATION_REPORT.md`](docs/EVALUATION_REPORT.md).
 
 ## Roadmap
 
+- [ ] Benchmark encode throughput and compression against tiktoken and Hugging Face Tokenizers.
 - [ ] Load GPT-2's published merges to reproduce its exact vocabulary.
 - [ ] Add special-token handling and an added-tokens table.
 - [ ] Add a trie-based encoder for longer inputs.
