@@ -1,0 +1,52 @@
+---
+title: System Architecture - BPE Tokenizer Library
+config:
+  theme: base
+  themeVariables:
+    fontFamily: "Inter, system-ui, sans-serif"
+    primaryColor: "#F8FAFC"
+    primaryBorderColor: "#1E293B"
+    primaryTextColor: "#1E293B"
+    lineColor: "#64748B"
+    clusterBkg: "#EEF2FF"
+    clusterBorder: "#94A3B8"
+---
+flowchart TB
+    classDef edge     fill:#F59E0B,stroke:#1E293B,color:#1E293B,stroke-width:1px;
+    classDef core     fill:#6366F1,stroke:#1E293B,color:#ffffff,stroke-width:1px;
+    classDef data     fill:#10B981,stroke:#1E293B,color:#ffffff,stroke-width:1px;
+    classDef control  fill:#0EA5E9,stroke:#1E293B,color:#ffffff,stroke-width:1px;
+    classDef obs      fill:#CBD5E1,stroke:#1E293B,color:#1E293B,stroke-width:1px;
+
+    Client([Client]):::edge
+
+    subgraph Train["Training (once at startup)"]
+        direction TB
+        Corpus[(Corpus)]:::data
+        Pre1["Pretokenize<br/>GPT-2 regex"]:::core
+        Bytes1["Byte-level glyphs<br/>reversible 256-byte map"]:::core
+        Count["Count adjacent pairs<br/>merge most frequent, repeat"]:::core
+    end
+
+    Merges[(Ordered merges = the model)]:::data
+
+    subgraph Encode["Encoding path (stateless)"]
+        direction TB
+        Pre2["Pretokenize"]:::core
+        Bytes2["Byte-level glyphs"]:::core
+        Apply["Apply merges by rank<br/>lowest rank first"]:::core
+    end
+
+    subgraph Edge["Service layer (stdlib HTTP)"]
+        direction TB
+        Router["Router<br/>/health | /ready | /metrics | /encode | /decode | /stats"]:::core
+        Validate["Validation<br/>bounded text and ids"]:::control
+    end
+
+    Result["Token ids / decoded text"]:::obs
+
+    Corpus --> Pre1 --> Bytes1 --> Count -->|merges| Merges
+    Client -->|text| Router --> Validate --> Pre2 --> Bytes2 --> Apply
+    Merges -.-> Apply
+    Apply -->|ids| Result
+    Result --> Router -->|JSON response| Client
