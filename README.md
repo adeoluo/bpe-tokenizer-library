@@ -72,6 +72,15 @@ in pure Python.
 | `emoji: 😀🚀🧠 end` | yes |
 | `日本語のテキスト` | yes |
 | `tabs\tand\nnewlines` | yes |
+| `snake_case __dunder__` | yes |
+| `a_b _ _x_ trailing_` | yes |
+
+Losslessness is enforced by a property test that pre-tokenizes and round-trips **3,000 random
+Unicode strings** (seeded, spanning Latin, punctuation, accented, and CJK ranges) and asserts the
+concatenated chunks rebuild each input exactly. An earlier version of the pre-tokenizer silently
+dropped underscores (and any other word-class character that is neither a letter nor a digit),
+which broke the round trip; the regular expression and the property test were added together so the
+class of defect cannot recur. See [the pre-tokenizer notes](src/bpe_tokenizer_library/pretokenize.py).
 
 ## Demonstration
 
