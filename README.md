@@ -82,6 +82,23 @@ dropped underscores (and any other word-class character that is neither a letter
 which broke the round trip; the regular expression and the property test were added together so the
 class of defect cannot recur. See [the pre-tokenizer notes](src/bpe_tokenizer_library/pretokenize.py).
 
+### Scale
+
+> Reproduce with `uv run python benchmarks/scale.py`. Trains once, then encodes held-out passages
+> of increasing size; peak memory from `tracemalloc`.
+
+| Input size | Encode time | Throughput | Tokens | Peak memory | Lossless |
+|---|---:|---:|---:|---:|:--:|
+| 23,200 bytes | 0.08 s | ~300,000 bytes/s | 6,200 | 0.3 MiB | yes |
+| 116,000 bytes | 0.39 s | ~301,000 bytes/s | 31,000 | 1.5 MiB | yes |
+| 464,000 bytes | 1.68 s | ~277,000 bytes/s | 124,000 | 5.8 MiB | yes |
+| 1,160,000 bytes | 4.44 s | ~261,000 bytes/s | 310,000 | 14.5 MiB | yes |
+
+Encode throughput stays roughly constant per byte and memory grows linearly with input size, and the
+round trip stays lossless at over a megabyte of input. This is a pure-Python encoder, so the
+throughput shows how the implementation scales, not competitive wall-clock speed against a compiled
+tokenizer such as tiktoken.
+
 ## Demonstration
 
 ```text
