@@ -7,7 +7,7 @@
 3. On held-out C4 text: compression (bytes per token) and encode throughput, single
    threaded and batched, against tiktoken's GPT-2 encoding.
 
-    make rust-develop
+    uv sync
     uv run --no-sync --with tiktoken python benchmarks/c4_scale.py \\
         --c4 c4-train.00000-of-01024.json.gz --heldout c4-train.00001-of-01024.json.gz
 """

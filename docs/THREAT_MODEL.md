@@ -29,8 +29,8 @@
 - **No code execution:** inputs are text and integers; no user-supplied string is evaluated.
 
 ## Supply chain
-- The Python package needs only the standard library at runtime. The optional Rust extension
-  depends on PyO3, pinned by `rust/Cargo.lock`; development tooling is pinned via `uv.lock`.
+- The Python package needs only the standard library at runtime. The Rust extension compiled
+  into it depends on PyO3, pinned by `rust/Cargo.lock`; development tooling is pinned via `uv.lock`.
   CodeQL runs in CI.
 
 ## Residual risk

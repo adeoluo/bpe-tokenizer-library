@@ -14,8 +14,10 @@ def no_extension(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(backend, "_EXTENSION", None)
 
 
-def test_default_backend_is_python() -> None:
-    assert BPETokenizer.train(sample_corpus(repeat=2), 300).backend == "python"
+def test_default_backend_is_the_fastest_available() -> None:
+    expected = "rust" if backend.rust_available() else "python"
+    assert BPETokenizer.train(sample_corpus(repeat=2), 300).backend == expected
+    assert BPETokenizer.train(sample_corpus(repeat=2), 300, backend="python").backend == "python"
 
 
 def test_unknown_backend_is_rejected() -> None:
@@ -28,7 +30,7 @@ def test_rust_backend_falls_back_to_python_without_extension() -> None:
     assert not backend.rust_available()
     assert backend.rust_core([]) is None
     assert backend.rust_train(["abc"], 300) is None
-    reference = BPETokenizer.train(sample_corpus(), 500)
+    reference = BPETokenizer.train(sample_corpus(), 500, backend="python")
     tok = BPETokenizer.train(sample_corpus(), 500, backend="rust")
     assert tok.backend == "python"
     assert tok == reference
