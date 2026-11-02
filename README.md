@@ -94,7 +94,40 @@ The Python and Rust columns use the same merges (vocabulary 493) and return iden
 the benchmark asserts this before timing. tiktoken runs its own GPT-2 vocabulary of 50,257 tokens,
 so its column is a throughput reference only: the vocabularies, and therefore the token ids and
 the amount of merge work per byte, differ, and the figures do not show that one tokenizer is
-faster than the other on equal terms.
+faster than the other on equal terms. The equal-vocabulary comparison on real text is below.
+
+### Trained on real web text at GPT-2's vocabulary size
+
+> Reproduce with `make rust-develop`, two C4 English shards
+> (`https://huggingface.co/datasets/allenai/c4/resolve/main/en/c4-train.0000N-of-01024.json.gz`),
+> then `uv run --no-sync --with tiktoken python benchmarks/c4_scale.py --c4 <shard 0> --heldout <shard 1>`.
+> Apple M1, 8 cores. Raw numbers: [benchmarks/results/c4_scale.json](benchmarks/results/c4_scale.json).
+
+The trainer finds the next merge with a max-heap ordered exactly like Python's rule (highest count,
+then the lexicographically smallest pair), instead of scanning every pair count for each merge. It
+learns the same merges as before, which the parity suite checks against the Python trainer:
+
+| C4 text | Vocabulary | Previous trainer | Heap trainer | Speedup | Same merges |
+|---:|---:|---:|---:|---:|:---:|
+| 1 MB | 8,192 | 0.6 s | 0.2 s | 2.8x | yes |
+| 4 MB | 8,192 | 1.3 s | 0.5 s | 2.5x | yes |
+| 16 MB | 8,192 | 2.8 s | 1.4 s | 2.0x | yes |
+| 100 MB | 50,257 | 47.8 s | 6.7 s | **7.1x** | yes |
+
+A 50,257-token vocabulary, the size of GPT-2's, trained on 100 MB of C4
+in 6.7 seconds. Against tiktoken's GPT-2 encoding on 20 MB of
+held-out C4 (9,509 documents from a different shard), with the same vocabulary size:
+
+| Tokenizer | Bytes per token (higher is better) | Encode, 1 thread | Encode, batch (8 threads) |
+|---|---:|---:|---:|
+| **bpe-tokenizer-library, trained on C4** | **4.61** | **19.4 MB/s** | **68.5 MB/s** |
+| tiktoken gpt2 | 4.54 | 18.8 MB/s | 52.4 MB/s |
+
+How to read this: compression is 1.5% better, but this tokenizer was trained on C4 itself while GPT-2's
+vocabulary was trained on WebText, so part of that edge is in-domain training rather than a better
+algorithm. Single-threaded encoding is on par with tiktoken (within 3%). Batch encoding is 1.3x
+faster because `encode_batch` now spreads texts across all cores with the GIL released. Every
+held-out document round-trips exactly.
 
 ### Parity guarantee
 

@@ -20,6 +20,7 @@ python = ["dep:pyo3"]
 
 [dependencies]
 pyo3 = { version = "0.30", optional = true, features = ["abi3-py311"] }
+rayon = "1.10"
 
 [profile.release]
 lto = true

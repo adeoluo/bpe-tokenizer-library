@@ -1,0 +1,47 @@
+{
+  "machine": "arm64 Darwin",
+  "cpus": 8,
+  "scaling": [
+    {
+      "mb": 1.0,
+      "new_s": 0.2278304579995165,
+      "old_s": 0.6409569160005049,
+      "same": true
+    },
+    {
+      "mb": 4.0,
+      "new_s": 0.5137868330002675,
+      "old_s": 1.286004999999932,
+      "same": true
+    },
+    {
+      "mb": 16.0,
+      "new_s": 1.3829511249996358,
+      "old_s": 2.752001666999604,
+      "same": true
+    }
+  ],
+  "full": {
+    "mb": 100,
+    "vocab": 50257,
+    "seconds": 6.686459540999749
+  },
+  "heldout": {
+    "mb": 20.005154,
+    "documents": 9509,
+    "rows": [
+      {
+        "tokenizer": "bpe-tokenizer-library, trained on C4 (50,257 tokens)",
+        "bytes_per_token": 4.614771399294952,
+        "single_mb_s": 19.38986196702178,
+        "batch_mb_s": 68.51943458402786
+      },
+      {
+        "tokenizer": "tiktoken gpt2 (50,257 tokens)",
+        "bytes_per_token": 4.539323787779567,
+        "single_mb_s": 18.8024608704409,
+        "batch_mb_s": 52.44076113890179
+      }
+    ]
+  }
+}

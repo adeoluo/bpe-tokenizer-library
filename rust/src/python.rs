@@ -39,7 +39,9 @@ impl PyTokenizer {
 
     /// Encode several texts. Releases the GIL while encoding.
     fn encode_batch(&self, py: Python<'_>, texts: Vec<String>) -> Vec<Vec<u32>> {
-        py.detach(|| texts.iter().map(|t| self.inner.encode(t)).collect())
+        use rayon::prelude::*;
+        // Texts are independent, so they are encoded on all cores with the GIL released.
+        py.detach(|| texts.par_iter().map(|t| self.inner.encode(t)).collect())
     }
 
     /// Decode token ids; raises `KeyError` for an unknown id.
