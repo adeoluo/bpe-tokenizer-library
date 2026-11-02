@@ -36,12 +36,16 @@ output, so it can be switched on without changing any result.
   <img src="docs/architecture/architecture.svg" alt="Architecture diagram" width="860">
 </p>
 
+<sub>Legend: amber = entry points and external systems, indigo = core logic, green = data and state, blue = validation and control, grey = observability and outputs.</sub>
+
 Training counts adjacent symbol pairs across a pre-tokenized, byte-level corpus and repeatedly
 merges the most frequent pair, producing an ordered merge list that is the model. Encoding applies
 those merges by rank within each chunk. `BPETokenizer` is the single Python API: with
 `backend="rust"` it delegates to the `bpe_tokenizer_rs` extension (Rust core via PyO3), and when
 the extension is not installed it falls back to the Python implementation. Parity tests hold the
-two paths to identical output. See the [ADRs](docs/adr/) for the key decisions.
+two paths to identical output. The HTTP service validates text length and id ranges before calling
+the same API and exposes Prometheus metrics, and the evaluation reports compression, round-trip
+losslessness, and throughput. See the [ADRs](docs/adr/) for the key decisions.
 
 ### What it implements
 
