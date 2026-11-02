@@ -2,11 +2,15 @@
 //!
 //! Python recounts every adjacent pair after each merge. This version keeps
 //! the counts up to date incrementally, touching only the words that contain
-//! the merged pair, which yields the same counts and therefore the same merge
-//! at every step: the most frequent pair, ties broken by the lexicographically
-//! smallest `(left, right)` glyph strings.
+//! the merged pair, and finds the next merge with a max-heap instead of a scan
+//! over every pair. The heap orders by count, then by the lexicographically
+//! smallest `(left, right)` glyph strings, the same rule Python uses, so every
+//! step picks the same merge. Entries are invalidated lazily: when a count
+//! changes a fresh entry is pushed, and a popped entry whose count no longer
+//! matches is discarded.
 
-use std::collections::{HashMap, HashSet};
+use std::cmp::{Ordering, Reverse};
+use std::collections::{BinaryHeap, HashMap, HashSet};
 
 use crate::pretokenize::pretokenize_each;
 use crate::unicode_tables::{default_table, ClassTable};
@@ -19,15 +23,22 @@ fn add_pairs(
     freq: i64,
     counts: &mut HashMap<Pair, i64>,
     where_: &mut HashMap<Pair, HashSet<usize>>,
+    dirty: &mut HashSet<Pair>,
 ) {
     for w in word.windows(2) {
         let pair = (w[0], w[1]);
         *counts.entry(pair).or_insert(0) += freq;
         where_.entry(pair).or_default().insert(index);
+        dirty.insert(pair);
     }
 }
 
-fn remove_pairs(word: &[u32], freq: i64, counts: &mut HashMap<Pair, i64>) {
+fn remove_pairs(
+    word: &[u32],
+    freq: i64,
+    counts: &mut HashMap<Pair, i64>,
+    dirty: &mut HashSet<Pair>,
+) {
     for w in word.windows(2) {
         let pair = (w[0], w[1]);
         if let Some(count) = counts.get_mut(&pair) {
@@ -36,6 +47,40 @@ fn remove_pairs(word: &[u32], freq: i64, counts: &mut HashMap<Pair, i64>) {
                 counts.remove(&pair);
             }
         }
+        dirty.insert(pair);
+    }
+}
+
+/// A heap entry: higher count first, then the lexicographically smallest names.
+#[derive(PartialEq, Eq)]
+struct Candidate {
+    count: i64,
+    names: Reverse<(String, String)>,
+    pair: Pair,
+}
+
+impl Ord for Candidate {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.count
+            .cmp(&other.count)
+            .then_with(|| self.names.cmp(&other.names))
+    }
+}
+
+impl PartialOrd for Candidate {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+fn candidate(pair: Pair, count: i64, names: &[String]) -> Candidate {
+    Candidate {
+        count,
+        names: Reverse((
+            names[pair.0 as usize].clone(),
+            names[pair.1 as usize].clone(),
+        )),
+        pair,
     }
 }
 
@@ -93,20 +138,33 @@ pub fn train_bpe_with<S: AsRef<str>>(
 
     let mut counts: HashMap<Pair, i64> = HashMap::new();
     let mut where_: HashMap<Pair, HashSet<usize>> = HashMap::new();
+    let mut dirty: HashSet<Pair> = HashSet::new();
     for (index, word) in words.iter().enumerate() {
-        add_pairs(word, index, freqs[index], &mut counts, &mut where_);
+        add_pairs(
+            word,
+            index,
+            freqs[index],
+            &mut counts,
+            &mut where_,
+            &mut dirty,
+        );
     }
+    let mut heap: BinaryHeap<Candidate> = counts
+        .iter()
+        .map(|(&pair, &count)| candidate(pair, count, &names))
+        .collect();
+    dirty.clear();
 
     let mut merges = Vec::new();
     while merges.len() < target {
-        let best = counts.iter().max_by(|(pa, ca), (pb, cb)| {
-            ca.cmp(cb).then_with(|| {
-                let a = (names[pa.0 as usize].as_str(), names[pa.1 as usize].as_str());
-                let b = (names[pb.0 as usize].as_str(), names[pb.1 as usize].as_str());
-                b.cmp(&a)
-            })
-        });
-        let Some((&pair, _)) = best else {
+        let mut best = None;
+        while let Some(top) = heap.pop() {
+            if counts.get(&top.pair) == Some(&top.count) {
+                best = Some(top.pair);
+                break;
+            }
+        }
+        let Some(pair) = best else {
             break;
         };
         let name = format!("{}{}", names[pair.0 as usize], names[pair.1 as usize]);
@@ -121,9 +179,21 @@ pub fn train_bpe_with<S: AsRef<str>>(
                 continue;
             }
             let updated = merge_word(word, pair, merged);
-            remove_pairs(word, freqs[index], &mut counts);
-            add_pairs(&updated, index, freqs[index], &mut counts, &mut where_);
+            remove_pairs(word, freqs[index], &mut counts, &mut dirty);
+            add_pairs(
+                &updated,
+                index,
+                freqs[index],
+                &mut counts,
+                &mut where_,
+                &mut dirty,
+            );
             words[index] = updated;
+        }
+        for changed in dirty.drain() {
+            if let Some(&count) = counts.get(&changed) {
+                heap.push(candidate(changed, count, &names));
+            }
         }
         merges.push((
             names[pair.0 as usize].clone(),
