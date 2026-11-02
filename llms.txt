@@ -1,0 +1,43 @@
+# BPE Tokenizer Library
+
+> A byte-level byte-pair-encoding tokenizer implementing the GPT-2 algorithm, with a reference Python implementation and an optional Rust core that produces identical token ids.
+
+Languages: Python, Rust. License: MIT. Source: https://github.com/adeoluo/bpe-tokenizer-library
+
+## Docs
+
+- [README](https://github.com/adeoluo/bpe-tokenizer-library/blob/main/README.md): motivation, architecture, results, quickstart, usage, design decisions, testing, responsible ai, limitations, roadmap
+- [AGENTS.md](https://github.com/adeoluo/bpe-tokenizer-library/blob/main/AGENTS.md): layout, commands and conventions for changing the code
+- [Architecture diagram](https://github.com/adeoluo/bpe-tokenizer-library/blob/main/docs/architecture/architecture.mmd): Mermaid source of the component diagram
+- [Data Card - BPE Tokenizer Library](https://github.com/adeoluo/bpe-tokenizer-library/blob/main/docs/DATA_CARD.md)
+- [Definition of Done](https://github.com/adeoluo/bpe-tokenizer-library/blob/main/docs/DEFINITION_OF_DONE.md)
+- [Evaluation Report - BPE Tokenizer Library](https://github.com/adeoluo/bpe-tokenizer-library/blob/main/docs/EVALUATION_REPORT.md)
+- [Model / System Card - BPE Tokenizer Library](https://github.com/adeoluo/bpe-tokenizer-library/blob/main/docs/MODEL_CARD.md)
+- [Threat Model - BPE Tokenizer Library](https://github.com/adeoluo/bpe-tokenizer-library/blob/main/docs/THREAT_MODEL.md)
+- [ADR-0001: Record architecture decisions](https://github.com/adeoluo/bpe-tokenizer-library/blob/main/docs/adr/0001-record-architecture-decisions.md)
+- [ADR-0002: Byte-level encoding for lossless tokenization](https://github.com/adeoluo/bpe-tokenizer-library/blob/main/docs/adr/0002-byte-level.md)
+- [ADR-0003: Encoding by merge rank](https://github.com/adeoluo/bpe-tokenizer-library/blob/main/docs/adr/0003-merge-ranks.md)
+- [ADR-0004: Optional Rust core with a Python fallback](https://github.com/adeoluo/bpe-tokenizer-library/blob/main/docs/adr/0004-rust-core.md)
+- [ADR-NNNN: <short title>](https://github.com/adeoluo/bpe-tokenizer-library/blob/main/docs/adr/template.md)
+- [Changelog](https://github.com/adeoluo/bpe-tokenizer-library/blob/main/CHANGELOG.md): release history
+
+## Source
+
+- [rust/src/bytelevel.rs](https://github.com/adeoluo/bpe-tokenizer-library/blob/main/rust/src/bytelevel.rs): GPT-2's reversible map between the 256 byte values and printable glyphs.
+- [rust/src/lib.rs](https://github.com/adeoluo/bpe-tokenizer-library/blob/main/rust/src/lib.rs): Rust core of `bpe-tokenizer-library`.
+- [rust/src/pretokenize.rs](https://github.com/adeoluo/bpe-tokenizer-library/blob/main/rust/src/pretokenize.rs): Pre-tokenization that reproduces the Python pattern exactly.
+- [rust/src/python.rs](https://github.com/adeoluo/bpe-tokenizer-library/blob/main/rust/src/python.rs): PyO3 bindings, compiled only with the `python` feature (enabled by maturin).
+- [rust/src/tokenizer.rs](https://github.com/adeoluo/bpe-tokenizer-library/blob/main/rust/src/tokenizer.rs): Encoding and decoding with an ordered merge list.
+- [rust/src/trainer.rs](https://github.com/adeoluo/bpe-tokenizer-library/blob/main/rust/src/trainer.rs): Training merges, identical to the Python `train_bpe`.
+- [rust/src/unicode_tables/mod.rs](https://github.com/adeoluo/bpe-tokenizer-library/blob/main/rust/src/unicode_tables/mod.rs): Character-class tables, one per Unicode version of the Python `re` module.
+- [src/bpe_tokenizer_library/__init__.py](https://github.com/adeoluo/bpe-tokenizer-library/blob/main/src/bpe_tokenizer_library/__init__.py): BPE Tokenizer Library: a byte-level byte-pair-encoding tokenizer with an optional Rust core.
+- [src/bpe_tokenizer_library/backend.py](https://github.com/adeoluo/bpe-tokenizer-library/blob/main/src/bpe_tokenizer_library/backend.py): Optional Rust backend, loaded only when the ``bpe_tokenizer_rs`` extension is built.
+- [src/bpe_tokenizer_library/bytelevel.py](https://github.com/adeoluo/bpe-tokenizer-library/blob/main/src/bpe_tokenizer_library/bytelevel.py): The reversible byte-to-unicode mapping used by GPT-2 style byte-level BPE.
+- [src/bpe_tokenizer_library/cli.py](https://github.com/adeoluo/bpe-tokenizer-library/blob/main/src/bpe_tokenizer_library/cli.py): Command line interface for the byte-level BPE tokenizer.
+- [src/bpe_tokenizer_library/data.py](https://github.com/adeoluo/bpe-tokenizer-library/blob/main/src/bpe_tokenizer_library/data.py): A small built-in corpus for training and demonstrations.
+- [src/bpe_tokenizer_library/evaluation.py](https://github.com/adeoluo/bpe-tokenizer-library/blob/main/src/bpe_tokenizer_library/evaluation.py): Evaluation: compression, lossless round-trip, and encode throughput.
+- [src/bpe_tokenizer_library/observability.py](https://github.com/adeoluo/bpe-tokenizer-library/blob/main/src/bpe_tokenizer_library/observability.py): In-process request metrics for the HTTP service (Prometheus text exposition).
+- [src/bpe_tokenizer_library/pretokenize.py](https://github.com/adeoluo/bpe-tokenizer-library/blob/main/src/bpe_tokenizer_library/pretokenize.py): Pre-tokenization: split text into word-like chunks before byte-level BPE.
+- [src/bpe_tokenizer_library/service.py](https://github.com/adeoluo/bpe-tokenizer-library/blob/main/src/bpe_tokenizer_library/service.py): A standard-library HTTP service exposing the trained tokenizer.
+- [src/bpe_tokenizer_library/tokenizer.py](https://github.com/adeoluo/bpe-tokenizer-library/blob/main/src/bpe_tokenizer_library/tokenizer.py): The byte-level BPE tokenizer: encode, decode, save, and load.
+- [src/bpe_tokenizer_library/trainer.py](https://github.com/adeoluo/bpe-tokenizer-library/blob/main/src/bpe_tokenizer_library/trainer.py): Training byte-pair-encoding merges from a corpus.
