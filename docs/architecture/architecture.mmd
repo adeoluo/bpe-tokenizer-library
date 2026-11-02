@@ -1,13 +1,64 @@
 flowchart LR
-    Corpus[(Corpus)] --> Trainer["Trainer<br/>most frequent pair"]
-    Trainer --> Merges[(Ordered merges)]
-    App([Caller]) -->|text or ids| API["BPETokenizer<br/>Python API"]
-    Merges -.-> API
-    API --> Select{"backend<br/>available?"}
-    Select -->|rust| PyO3["PyO3 bindings<br/>bpe_tokenizer_rs"]
-    PyO3 --> Rust["Rust core<br/>pretokenize, byte map, merges"]
-    Select -->|fallback| Py["Python implementation<br/>re, byte map, merge ranks"]
-    Rust --> Out["Token ids or text"]
-    Py --> Out
-    Parity["Parity tests<br/>identical ids and text"] -.- Rust
-    Parity -.- Py
+    classDef edge     fill:#F59E0B,stroke:#1E293B,color:#1E293B,stroke-width:1px;
+    classDef core     fill:#6366F1,stroke:#1E293B,color:#ffffff,stroke-width:1px;
+    classDef data     fill:#10B981,stroke:#1E293B,color:#ffffff,stroke-width:1px;
+    classDef control  fill:#0EA5E9,stroke:#1E293B,color:#ffffff,stroke-width:1px;
+    classDef obs      fill:#CBD5E1,stroke:#1E293B,color:#1E293B,stroke-width:1px;
+
+    Caller(["Python caller<br/>or HTTP client"]):::edge
+    CLI(["CLI<br/>train, encode, serve"]):::edge
+
+    subgraph Interfaces["Interfaces (library and stdlib HTTP)"]
+        direction TB
+        Router["Router<br/>/encode, /decode, /stats, /metrics"]:::edge
+        Validate["Validation<br/>text length, id range"]:::control
+        API["BPETokenizer<br/>train, encode, decode, JSON"]:::core
+    end
+
+    subgraph Dispatch["Backend dispatch"]
+        direction TB
+        Select{"rust_available?<br/>extension + Unicode version"}:::control
+    end
+
+    subgraph Engines["Implementations (identical output)"]
+        direction TB
+        PyTrain["Python trainer<br/>most frequent pair, tie-break"]:::core
+        PyEncode["Python encoder<br/>GPT-2 regex, byte map, merge ranks"]:::core
+        Rust["Rust core via PyO3<br/>bpe_tokenizer_rs: train,<br/>encode, decode, heap merges"]:::core
+    end
+
+    subgraph State["Data and state"]
+        direction TB
+        Corpus[("Training corpus<br/>sample + held-out text")]:::data
+        Merges[("Ordered merges<br/>vocab and ranks, JSON")]:::data
+        Tables[("Unicode class tables<br/>14.0 to 16.0")]:::data
+    end
+
+    subgraph Evaluation["Evaluation and observability"]
+        direction TB
+        Reports["Reports<br/>bytes per token, round trip,<br/>throughput"]:::obs
+        Parity["Parity tests<br/>same ids and text"]:::obs
+        Compare["compare.py<br/>Python vs Rust vs tiktoken"]:::obs
+        Metrics["ServiceMetrics<br/>Prometheus"]:::obs
+    end
+
+    Caller -->|text or ids| API
+    Caller -->|HTTP| Router
+    CLI -->|serve| Router
+    CLI -->|train, encode| API
+    Router --> Validate
+    Validate --> API
+    API --> Select
+    Select -->|fallback| PyTrain
+    Select -->|fallback| PyEncode
+    Select -->|rust| Rust
+    PyTrain -.->|reads| Corpus
+    PyTrain -->|merges| Merges
+    Rust -->|merges| Merges
+    PyEncode -.->|ranks| Merges
+    Rust -.->|per version| Tables
+    PyEncode -->|ids| Reports
+    Rust -.-> Parity
+    PyEncode -.-> Parity
+    Rust -.-> Compare
+    Router -.-> Metrics
