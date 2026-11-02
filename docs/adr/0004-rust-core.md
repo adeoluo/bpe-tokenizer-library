@@ -30,3 +30,10 @@ reimplemented as a single left-to-right scan, including the backtracking behavio
 - Supporting a new Python release with a newer Unicode database means generating one more table;
   until then that interpreter uses the Python backend.
 - Two implementations must be kept in step; the parity suite is the guard.
+
+## Update: the Rust core is the default
+
+The package now builds with maturin, which compiles the Rust core into it on every install, and
+`backend="rust"` is the default. Since the two backends are tested to produce identical output,
+keeping the slower one as the default bought nothing. The Python implementation remains the
+reference the parity tests check against and the fallback when the extension is missing.
