@@ -5,60 +5,43 @@ flowchart LR
     classDef control  fill:#0EA5E9,stroke:#1E293B,color:#ffffff,stroke-width:1px;
     classDef obs      fill:#CBD5E1,stroke:#1E293B,color:#1E293B,stroke-width:1px;
 
-    Caller(["Python caller<br/>or HTTP client"]):::edge
-    CLI(["CLI<br/>train, encode, serve"]):::edge
-
-    subgraph Interfaces["Interfaces (library and stdlib HTTP)"]
+    subgraph Interfaces["Interfaces"]
         direction TB
-        Router["Router<br/>/encode, /decode, /stats, /metrics"]:::edge
+        Caller([Python caller]):::edge
+        CLI(["CLI<br/>train, encode, serve"]):::edge
+        Router["Router<br/>/encode, /decode, /stats"]:::edge
         Validate["Validation<br/>text length, id range"]:::control
-        API["BPETokenizer<br/>train, encode, decode, JSON"]:::core
-    end
-
-    subgraph Dispatch["Backend dispatch"]
-        direction TB
-        Select{"rust_available?<br/>extension + Unicode version"}:::control
-    end
-
-    subgraph Engines["Implementations (identical output)"]
-        direction TB
-        PyTrain["Python trainer<br/>most frequent pair, tie-break"]:::core
-        PyEncode["Python encoder<br/>GPT-2 regex, byte map, merge ranks"]:::core
-        Rust["Rust core via PyO3<br/>bpe_tokenizer_rs: train,<br/>encode, decode, heap merges"]:::core
+        Caller ~~~ CLI --> Router --> Validate
     end
 
     subgraph State["Data and state"]
         direction TB
-        Corpus[("Training corpus<br/>sample + held-out text")]:::data
-        Merges[("Ordered merges<br/>vocab and ranks, JSON")]:::data
-        Tables[("Unicode class tables<br/>14.0 to 16.0")]:::data
+        Corpus[("Training corpus<br/>sample + held-out")]:::data
+        Merges[("Ordered merges<br/>vocab, ranks, JSON")]:::data
+        Tables[("Unicode tables<br/>14.0 to 16.0")]:::data
+        Corpus --> Merges ~~~ Tables
     end
 
-    subgraph Evaluation["Evaluation and observability"]
+    subgraph Core["Tokenizer core"]
         direction TB
-        Reports["Reports<br/>bytes per token, round trip,<br/>throughput"]:::obs
-        Parity["Parity tests<br/>same ids and text"]:::obs
-        Compare["compare.py<br/>Python vs Rust vs tiktoken"]:::obs
-        Metrics["ServiceMetrics<br/>Prometheus"]:::obs
+        API["BPETokenizer<br/>train, encode, decode"]:::core
+        Select{"Rust available?<br/>Unicode version match"}:::control
+        Py["Python backend<br/>trainer + encoder"]:::core
+        Rust["Rust core via PyO3<br/>bpe_tokenizer_rs"]:::core
+        API --> Select
+        Select -->|fallback| Py
+        Select -->|rust| Rust
     end
 
-    Caller -->|text or ids| API
-    Caller -->|HTTP| Router
-    CLI -->|serve| Router
-    CLI -->|train, encode| API
-    Router --> Validate
-    Validate --> API
-    API --> Select
-    Select -->|fallback| PyTrain
-    Select -->|fallback| PyEncode
-    Select -->|rust| Rust
-    PyTrain -.->|reads| Corpus
-    PyTrain -->|merges| Merges
-    Rust -->|merges| Merges
-    PyEncode -.->|ranks| Merges
-    Rust -.->|per version| Tables
-    PyEncode -->|ids| Reports
-    Rust -.-> Parity
-    PyEncode -.-> Parity
-    Rust -.-> Compare
-    Router -.-> Metrics
+    subgraph Obs["Evaluation and observability"]
+        direction TB
+        Reports["Reports<br/>compression, round trip"]:::obs
+        Parity["Parity tests<br/>same ids and text"]:::obs
+        Compare["compare.py<br/>Python, Rust, tiktoken"]:::obs
+        Metrics["ServiceMetrics<br/>Prometheus"]:::obs
+        Reports ~~~ Parity ~~~ Compare ~~~ Metrics
+    end
+
+    Interfaces -->|text or ids| Core
+    State -.->|merges, tables| Core
+    Core -->|ids or text| Obs
