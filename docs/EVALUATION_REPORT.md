@@ -43,8 +43,26 @@ Compression improves as merges are learned. The bundled corpus saturates at 237 
 ## Throughput
 
 Encoding the held-out passage repeatedly yields roughly 560,000 to 680,000 bytes per second and
-over 180,000 tokens per second in pure Python. Under a concurrent service stress benchmark the
+over 180,000 tokens per second with the Python backend. Under a concurrent service stress benchmark the
 `/encode` handler sustains about 6,200 requests per second with p50 near 0.11 ms.
+
+### Rust backend and tiktoken
+
+`benchmarks/compare.py` encodes about 1 MB of text single-threaded (best of five runs, Apple M1,
+Python 3.13, on a shared machine under load, so absolute figures are conservative). The Python and Rust backends share the same merges and return identical ids;
+tiktoken uses its own GPT-2 vocabulary, so its column is a throughput reference only.
+
+| Workload | Python backend | Rust backend | tiktoken (gpt2) |
+|---|---:|---:|---:|
+| English text, 1 MB | 0.47 MB/s | 8.85 MB/s | 8.88 MB/s |
+| Random Unicode, 1 MB | 1.22 MB/s | 15.45 MB/s | 5.14 MB/s |
+
+## Parity of the Rust backend
+
+`tests/test_rust_parity.py` compares the backends on 12,223 strings (bundled corpus, round-trip
+battery, seeded random Unicode, adversarial fragments, long chunks) against four merge sets, every
+Unicode scalar value through the pre-tokenizer, 3,000 random id sequences through the decoder,
+and nine training runs. All outputs were identical under Python 3.11, 3.12, 3.13, and 3.14.
 
 ## Reproducibility
 

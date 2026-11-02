@@ -1,7 +1,7 @@
 [project]
 name = "bpe-tokenizer-library"
-version = "0.1.0"
-description = "A byte-level byte-pair-encoding tokenizer built from scratch in pure Python, with GPT-2 compatible merges"
+version = "0.2.0"
+description = "A byte-level byte-pair-encoding tokenizer implementing the GPT-2 algorithm, with a reference Python implementation and an optional Rust core"
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
@@ -14,6 +14,12 @@ dev = [
     "mypy>=1.14",
     "pytest>=8.0",
     "pytest-cov>=5.0",
+]
+# Opt-in: build the Rust extension and run the comparison benchmark.
+#   uv sync --group rust && uv run maturin develop --uv --release -m rust/Cargo.toml
+rust = [
+    "maturin>=1.7,<2",
+    "tiktoken>=0.8",
 ]
 
 [build-system]

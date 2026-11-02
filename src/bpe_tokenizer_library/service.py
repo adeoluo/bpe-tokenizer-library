@@ -1,4 +1,4 @@
-"""A dependency-free HTTP service exposing the trained tokenizer.
+"""A standard-library HTTP service exposing the trained tokenizer.
 
 The service trains a tokenizer once at startup over the built-in corpus, then
 encodes and decodes text. The routing logic is a pure function tested without a

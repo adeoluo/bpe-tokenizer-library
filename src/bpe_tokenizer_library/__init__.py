@@ -1,7 +1,8 @@
-"""BPE Tokenizer Library - a byte-level byte-pair-encoding tokenizer from scratch."""
+"""BPE Tokenizer Library: a byte-level byte-pair-encoding tokenizer with an optional Rust core."""
 
 from __future__ import annotations
 
+from bpe_tokenizer_library.backend import rust_available
 from bpe_tokenizer_library.bytelevel import bytes_to_unicode, decode_bytes, encode_bytes
 from bpe_tokenizer_library.data import held_out_text, sample_corpus
 from bpe_tokenizer_library.evaluation import (
@@ -16,7 +17,7 @@ from bpe_tokenizer_library.pretokenize import pretokenize
 from bpe_tokenizer_library.tokenizer import BPETokenizer
 from bpe_tokenizer_library.trainer import train_bpe
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 __all__ = [
     "BPETokenizer",
@@ -32,6 +33,7 @@ __all__ = [
     "is_lossless",
     "pretokenize",
     "round_trip_rate",
+    "rust_available",
     "sample_corpus",
     "train_bpe",
 ]

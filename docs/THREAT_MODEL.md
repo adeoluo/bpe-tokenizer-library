@@ -29,8 +29,9 @@
 - **No code execution:** inputs are text and integers; no user-supplied string is evaluated.
 
 ## Supply chain
-- Zero runtime dependencies beyond the standard library. Development tooling is pinned via
-  `uv.lock`. CodeQL and dependency scanning run in CI.
+- The Python package needs only the standard library at runtime. The optional Rust extension
+  depends on PyO3, pinned by `rust/Cargo.lock`; development tooling is pinned via `uv.lock`.
+  CodeQL runs in CI.
 
 ## Residual risk
 - Very large inputs are bounded by explicit length limits, so a single request cannot exhaust
