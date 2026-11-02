@@ -4,6 +4,12 @@ All notable changes to this project are documented here. The file is generated
 from Conventional Commits by [git-cliff](https://git-cliff.org) when a release is cut
 with `make cut-release`.
 
+## [0.4.0] 2026-11-02
+
+### Features
+
+- Build the Rust core into the package and use it by default (#4)
+
 ## [0.3.0] 2026-11-02
 
 ### Performance
