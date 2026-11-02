@@ -30,7 +30,7 @@
 
 ## Supply chain
 - The Python package needs only the standard library at runtime. The Rust extension compiled
-  into it depends on PyO3, pinned by `rust/Cargo.lock`; development tooling is pinned via `uv.lock`.
+  into it depends on PyO3 and rayon, pinned by `rust/Cargo.lock`; development tooling is pinned via `uv.lock`.
   CodeQL runs in CI.
 
 ## Residual risk
