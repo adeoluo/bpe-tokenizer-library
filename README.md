@@ -251,6 +251,16 @@ Trained a byte-level BPE tokenizer: vocab 493, 237 merges.
   encode throughput: 564,232 bytes/sec
 ```
 
+### Demos
+
+Recorded from real runs with [vhs](https://github.com/charmbracelet/vhs); each tape is in `docs/demo/`.
+
+Training the byte-level BPE, then encoding text with it.
+
+<p align="center">
+  <img src="docs/demo/train-encode.gif" alt="Training the byte-level BPE, then encoding text with it" width="860">
+</p>
+
 ## Design decisions
 
 - **Byte-level, not character-level**: operating on bytes through a reversible mapping makes the
