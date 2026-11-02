@@ -1,7 +1,7 @@
 <h1 align="center">BPE Tokenizer Library</h1>
 
 <p align="center">
-  <em>A byte-level byte-pair-encoding tokenizer implementing the GPT-2 algorithm, with a reference Python implementation and an optional Rust core that produces identical token ids.</em>
+  <em>A byte-level byte-pair-encoding tokenizer implementing the GPT-2 algorithm, with a Rust core that runs by default and a reference Python implementation that it matches token for token.</em>
 </p>
 
 <p align="center">
@@ -26,9 +26,10 @@ readable reference and needs nothing beyond the standard library.
 Because it is byte-level, it round-trips **any** string exactly, including emoji, accented text,
 and non-Latin scripts, which tokenizers that split on characters cannot guarantee.
 
-The Python encoder runs at roughly one megabyte per second or less. An optional Rust core, exposed
-through PyO3, encodes the same text 13 to 19 times faster and is tested to produce byte-for-byte identical
-output, so it can be switched on without changing any result.
+Encoding and training run on a Rust core, exposed through PyO3 and compiled into the package
+on install, so it is what every user gets. It encodes 13 to 19 times faster than the Python
+implementation and is tested to produce byte-for-byte identical output; the Python version is kept
+as the readable reference that the Rust core is checked against.
 
 ## Architecture
 
@@ -40,9 +41,10 @@ output, so it can be switched on without changing any result.
 
 Training counts adjacent symbol pairs across a pre-tokenized, byte-level corpus and repeatedly
 merges the most frequent pair, producing an ordered merge list that is the model. Encoding applies
-those merges by rank within each chunk. `BPETokenizer` is the single Python API: with
-`backend="rust"` it delegates to the `bpe_tokenizer_rs` extension (Rust core via PyO3), and when
-the extension is not installed it falls back to the Python implementation. Parity tests hold the
+those merges by rank within each chunk. `BPETokenizer` is the single Python API: by default
+(`backend="rust"`) it delegates to the `bpe_tokenizer_rs` extension (Rust core via PyO3) that the
+install compiles into the package, and only if the extension is missing does it fall back to the
+Python implementation. Parity tests hold the
 two paths to identical output. The HTTP service validates text length and id ranges before calling
 the same API and exposes Prometheus metrics, and the evaluation reports compression, round-trip
 losslessness, and throughput. See the [ADRs](docs/adr/) for the key decisions.
@@ -98,7 +100,7 @@ faster than the other on equal terms. The equal-vocabulary comparison on real te
 
 ### Trained on real web text at GPT-2's vocabulary size
 
-> Reproduce with `make rust-develop`, two C4 English shards
+> Reproduce with two C4 English shards
 > (`https://huggingface.co/datasets/allenai/c4/resolve/main/en/c4-train.0000N-of-01024.json.gz`),
 > then `uv run --no-sync --with tiktoken python benchmarks/c4_scale.py --c4 <shard 0> --heldout <shard 1>`.
 > Apple M1, 8 cores. Raw numbers: [benchmarks/results/c4_scale.json](benchmarks/results/c4_scale.json).
@@ -234,26 +236,22 @@ python -m bpe_tokenizer_library serve               # start the HTTP service on 
 `BPETokenizer.train(corpus, vocab_size)` learns merges; `encode`, `decode`, `encode_batch`, and
 `tokens` apply them; `to_json` and `BPETokenizer.from_json` save and load the merge list.
 
-### Rust backend
+### Backends
 
-The Rust core is an optional extension module, built from `rust/` with maturin. The package
-installs and works without it.
-
-```bash
-uv sync --group rust                                     # maturin and tiktoken (opt-in)
-uv run maturin develop --uv --release -m rust/Cargo.toml # build bpe_tokenizer_rs into .venv
-```
+The Rust core is built from `rust/` by maturin, the package's build backend, so `pip install` and
+`uv sync` compile it into the package (this needs a Rust toolchain). After editing `rust/`,
+`make rust-develop` rebuilds it in place.
 
 ```python
 from bpe_tokenizer_library import BPETokenizer, rust_available, sample_corpus
 
-tok = BPETokenizer.train(sample_corpus(), vocab_size=600, backend="rust")
-print(rust_available(), tok.backend)  # True rust (or False python without the extension)
+tok = BPETokenizer.train(sample_corpus(), vocab_size=600)  # Rust core by default
+print(rust_available(), tok.backend)  # True rust
 ids = tok.encode("café 😀")  # identical ids to the Python backend
-fast = BPETokenizer.from_json(tok.to_json(), backend="rust")  # or tok.with_backend("rust")
+reference = tok.with_backend("python")  # the readable Python implementation
 ```
 
-`backend="rust"` is a request, not a requirement: when the extension is missing, or has no
+`backend="rust"`, the default, is a preference, not a requirement: when the extension is missing, or has no
 character table for the interpreter's Unicode version, the tokenizer uses the Python backend and
 `tok.backend` reports `"python"`. `encode_batch` on the Rust backend releases the GIL while
 encoding.
@@ -312,8 +310,9 @@ Byte-level encoding of accented text, CJK, and emoji, with a lossless round trip
   tokenizer lossless for arbitrary input. See [ADR 0002](docs/adr/0002-byte-level.md).
 - **Merge ranks for encoding**: applying merges lowest-rank-first reproduces GPT-2's segmentation
   exactly and keeps encoding deterministic. See [ADR 0003](docs/adr/0003-merge-ranks.md).
-- **Optional Rust core with a Python fallback**: the Python implementation stays the reference
-  and the default; the Rust extension is opt-in and must match it exactly. See
+- **Rust core by default, with a Python reference and fallback**: the Rust core is compiled into
+  every install and used unless `backend="python"` is asked for; the Python implementation stays
+  the reference it must match exactly. See
   [ADR 0004](docs/adr/0004-rust-core.md).
 
 ## Testing
@@ -345,10 +344,10 @@ BPE_REQUIRE_RUST=1 uv run pytest tests/test_rust_parity.py   # after maturin dev
 
 - The bundled corpus is small, so learned merges saturate at a few hundred; compression plateaus
   accordingly. Training on a larger corpus continues to improve it.
-- The Python backend runs at roughly one megabyte per second or less; use the Rust backend where
-  throughput matters.
-- The Rust extension is built from source with maturin; prebuilt wheels are attached to releases
-  for macOS arm64 only.
+- Installing from source compiles the Rust core, so it needs a Rust toolchain; prebuilt wheels
+  are attached to releases for macOS arm64 only.
+- The Python backend, kept as the reference and fallback, runs at roughly one megabyte per second
+  or less.
 - Rust parity depends on a generated character table per Unicode version. A new Python release
   with a newer Unicode database uses the Python backend until a table is generated for it
   (`scripts/gen_unicode_tables.py`).

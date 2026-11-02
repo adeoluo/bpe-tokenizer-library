@@ -1,6 +1,6 @@
 # BPE Tokenizer Library
 
-> A byte-level byte-pair-encoding tokenizer implementing the GPT-2 algorithm, with a reference Python implementation and an optional Rust core that produces identical token ids.
+> A byte-level byte-pair-encoding tokenizer implementing the GPT-2 algorithm, with a Rust core that runs by default and a reference Python implementation that it matches token for token.
 
 Languages: Python, Rust. License: MIT. Source: https://github.com/adeoluo/bpe-tokenizer-library
 
@@ -31,7 +31,7 @@ Languages: Python, Rust. License: MIT. Source: https://github.com/adeoluo/bpe-to
 - [rust/src/trainer.rs](https://github.com/adeoluo/bpe-tokenizer-library/blob/main/rust/src/trainer.rs): Training merges, identical to the Python `train_bpe`.
 - [rust/src/unicode_tables/mod.rs](https://github.com/adeoluo/bpe-tokenizer-library/blob/main/rust/src/unicode_tables/mod.rs): Character-class tables, one per Unicode version of the Python `re` module.
 - [src/bpe_tokenizer_library/__init__.py](https://github.com/adeoluo/bpe-tokenizer-library/blob/main/src/bpe_tokenizer_library/__init__.py): BPE Tokenizer Library: a byte-level byte-pair-encoding tokenizer with an optional Rust core.
-- [src/bpe_tokenizer_library/backend.py](https://github.com/adeoluo/bpe-tokenizer-library/blob/main/src/bpe_tokenizer_library/backend.py): Optional Rust backend, loaded only when the ``bpe_tokenizer_rs`` extension is built.
+- [src/bpe_tokenizer_library/backend.py](https://github.com/adeoluo/bpe-tokenizer-library/blob/main/src/bpe_tokenizer_library/backend.py): The Rust backend, the default whenever the ``bpe_tokenizer_rs`` extension is present.
 - [src/bpe_tokenizer_library/bytelevel.py](https://github.com/adeoluo/bpe-tokenizer-library/blob/main/src/bpe_tokenizer_library/bytelevel.py): The reversible byte-to-unicode mapping used by GPT-2 style byte-level BPE.
 - [src/bpe_tokenizer_library/cli.py](https://github.com/adeoluo/bpe-tokenizer-library/blob/main/src/bpe_tokenizer_library/cli.py): Command line interface for the byte-level BPE tokenizer.
 - [src/bpe_tokenizer_library/data.py](https://github.com/adeoluo/bpe-tokenizer-library/blob/main/src/bpe_tokenizer_library/data.py): A small built-in corpus for training and demonstrations.

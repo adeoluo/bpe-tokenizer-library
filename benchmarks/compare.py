@@ -5,10 +5,9 @@ input. The Python and Rust backends use the same merges and produce identical
 token ids. tiktoken runs its own GPT-2 vocabulary (``encode_ordinary``), so it is
 included as a throughput reference only: its token ids and vocabulary differ.
 
-Requires the opt-in ``rust`` dependency group and a built extension:
+Requires the ``rust`` dependency group (for tiktoken); installing builds the extension:
 
     uv sync --group rust
-    uv run maturin develop --uv --release -m rust/Cargo.toml
     uv run python benchmarks/compare.py
 
 Each figure is the best of several timed runs after a warm-up run.

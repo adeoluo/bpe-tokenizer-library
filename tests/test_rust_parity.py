@@ -90,7 +90,7 @@ def _merge_sets() -> tuple[tuple[str, list[tuple[str, str]]], ...]:
 
 
 def _pair(merges: list[tuple[str, str]]) -> tuple[BPETokenizer, BPETokenizer]:
-    python = BPETokenizer.from_merges(merges)
+    python = BPETokenizer.from_merges(merges, backend="python")
     rust = BPETokenizer.from_merges(merges, backend="rust")
     assert python.backend == "python"
     assert rust.backend == "rust"
@@ -164,7 +164,7 @@ def test_training_matches_python() -> None:
 
 
 def test_trained_rust_tokenizer_equals_python() -> None:
-    python = BPETokenizer.train(sample_corpus(), 600)
+    python = BPETokenizer.train(sample_corpus(), 600, backend="python")
     rust = BPETokenizer.train(sample_corpus(), 600, backend="rust")
     assert rust.backend == "rust"
     assert rust == python
@@ -174,7 +174,7 @@ def test_trained_rust_tokenizer_equals_python() -> None:
 
 
 def test_json_round_trip_keeps_backend() -> None:
-    tok = BPETokenizer.train(sample_corpus(repeat=5), 400)
+    tok = BPETokenizer.train(sample_corpus(repeat=5), 400, backend="python")
     restored = BPETokenizer.from_json(tok.to_json(), backend="rust")
     assert restored.backend == "rust"
     assert restored.encode("the quick dog") == tok.encode("the quick dog")

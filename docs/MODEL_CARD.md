@@ -3,7 +3,7 @@
 ## Overview
 - **What it is:** a byte-level byte-pair-encoding tokenizer implementing the GPT-2 algorithm
   (reversible byte mapping, regex pre-tokenization, rank-based merges), with a reference Python
-  implementation and an optional Rust core (PyO3 extension) that produces identical token ids.
+  implementation and a Rust core (PyO3 extension), used by default, that produces identical token ids.
 - **Base model:** none. Merges are trained from a corpus.
 - **Version and date:** 0.2.0, 2026.
 
@@ -15,7 +15,7 @@
 ## Out-of-scope / prohibited use
 - Not a drop-in for GPT-2's exact vocabulary unless its published merges are loaded; by default it
   reproduces the algorithm, not that specific table.
-- The Python backend encodes at roughly one megabyte per second; the optional Rust backend is 13 to
+- The Python backend encodes at roughly one megabyte per second; the default Rust backend is 13 to
   19 times faster on the bundled benchmark but is built from source or from a release wheel.
 
 ## Performance

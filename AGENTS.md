@@ -5,7 +5,7 @@ explains what the project does and why; this file explains how to change it safe
 
 ## Project
 
-A byte-level byte-pair-encoding tokenizer implementing the GPT-2 algorithm, with a reference Python implementation and an optional Rust core that produces identical token ids.
+A byte-level byte-pair-encoding tokenizer implementing the GPT-2 algorithm, with a Rust core that runs by default and a reference Python implementation that it matches token for token.
 
 ## Layout
 
@@ -31,7 +31,7 @@ Key modules:
 - `rust/src/unicode_tables/u15_1_0.rs`
 - `rust/src/unicode_tables/u16_0_0.rs`
 - `src/bpe_tokenizer_library/__init__.py`: BPE Tokenizer Library: a byte-level byte-pair-encoding tokenizer with an optional Rust core.
-- `src/bpe_tokenizer_library/backend.py`: Optional Rust backend, loaded only when the ``bpe_tokenizer_rs`` extension is built.
+- `src/bpe_tokenizer_library/backend.py`: The Rust backend, the default whenever the ``bpe_tokenizer_rs`` extension is present.
 - `src/bpe_tokenizer_library/bytelevel.py`: The reversible byte-to-unicode mapping used by GPT-2 style byte-level BPE.
 - `src/bpe_tokenizer_library/cli.py`: Command line interface for the byte-level BPE tokenizer.
 - `src/bpe_tokenizer_library/data.py`: A small built-in corpus for training and demonstrations.
@@ -56,9 +56,9 @@ Key modules:
 | `make evaluation` | Reproduce the results table |
 | `make run` | Run the HTTP service |
 | `make rust-check` | Rust core: fmt, clippy, unit tests |
-| `make rust-develop` | Build the Rust extension into .venv (opt-in rust group) |
-| `make parity` | Rust vs Python parity tests (requires rust-develop) |
-| `make bench-compare` | Encode throughput: Python vs Rust vs tiktoken (requires rust-develop) |
+| `make rust-develop` | Rebuild the Rust core into .venv after editing rust/ (uv sync also builds it) |
+| `make parity` | Rust vs Python parity tests |
+| `make bench-compare` | Encode throughput: Python vs Rust vs tiktoken |
 | `make diagram` | Render architecture diagram to SVG |
 | `make docker-build` | Build the image |
 | `make docker-up` | Run via docker compose |

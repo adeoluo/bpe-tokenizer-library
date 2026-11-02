@@ -1,8 +1,8 @@
-"""Optional Rust backend, loaded only when the ``bpe_tokenizer_rs`` extension is built.
+"""The Rust backend, the default whenever the ``bpe_tokenizer_rs`` extension is present.
 
-The Rust core lives in ``rust/`` and is compiled with maturin into the separate
-``bpe_tokenizer_rs`` extension module. It reproduces the Python encoder and
-decoder exactly. The pre-tokenizer's character classes come from the Unicode
+The Rust core lives in ``rust/`` and is compiled by maturin into the package as
+``bpe_tokenizer_library.bpe_tokenizer_rs`` on every install. It reproduces the
+Python encoder and decoder exactly. The pre-tokenizer's character classes come from the Unicode
 database of the running interpreter, which changes between Python releases, so
 the extension ships one table per Unicode version and is only used when it has
 the table for this interpreter. In every other case the library falls back to
@@ -30,10 +30,13 @@ class RustCore(Protocol):
 
 
 def _load_extension() -> Any:
-    try:
-        return importlib.import_module("bpe_tokenizer_rs")
-    except ImportError:
-        return None
+    # Inside the package for normal installs; top level for an older `maturin develop`.
+    for name in ("bpe_tokenizer_library.bpe_tokenizer_rs", "bpe_tokenizer_rs"):
+        try:
+            return importlib.import_module(name)
+        except ImportError:
+            continue
+    return None
 
 
 _EXTENSION: Any = _load_extension()

@@ -6,11 +6,12 @@ result is lossless for arbitrary input because the byte-level mapping is reversi
 and merges never cross chunk boundaries. Decoding maps token ids back to glyphs and
 then back to the original bytes.
 
-Every tokenizer can optionally run on the Rust core (``backend="rust"``), which
-produces identical token ids and decoded text. When the compiled extension is not
-installed, or has no character table for this interpreter's Unicode version, the
-tokenizer silently uses the Python implementation; :attr:`BPETokenizer.backend`
-reports which one is active.
+Every tokenizer runs on the Rust core by default (``backend="rust"``), which is
+compiled into the package on install and produces identical token ids and decoded
+text. When the extension is missing (a source checkout that was not built), or has
+no character table for this interpreter's Unicode version, the tokenizer silently
+uses the Python implementation; ``backend="python"`` asks for it explicitly, and
+:attr:`BPETokenizer.backend` reports which one is active.
 """
 
 from __future__ import annotations
@@ -41,11 +42,11 @@ class BPETokenizer:
     _core: RustCore | None = field(default=None, repr=False, compare=False)
 
     @classmethod
-    def from_merges(cls, merges: list[Pair], *, backend: Backend = "python") -> BPETokenizer:
+    def from_merges(cls, merges: list[Pair], *, backend: Backend = "rust") -> BPETokenizer:
         """Build a tokenizer from an ordered merge list, deriving the vocabulary.
 
-        ``backend="rust"`` encodes and decodes with the Rust core when it is
-        available and falls back to Python otherwise.
+        ``backend="rust"`` (the default) encodes and decodes with the Rust core
+        when it is available and falls back to Python otherwise.
         """
 
         from bpe_tokenizer_library.bytelevel import bytes_to_unicode
@@ -64,12 +65,12 @@ class BPETokenizer:
 
     @classmethod
     def train(
-        cls, corpus: list[str], vocab_size: int, *, backend: Backend = "python"
+        cls, corpus: list[str], vocab_size: int, *, backend: Backend = "rust"
     ) -> BPETokenizer:
         """Train merges on ``corpus`` and return a ready tokenizer.
 
-        With ``backend="rust"`` both training and encoding use the Rust core when
-        it is available; the learned merges are identical either way.
+        With ``backend="rust"`` (the default) both training and encoding use the
+        Rust core when it is available; the learned merges are identical either way.
         """
 
         merges = rust_train(corpus, vocab_size) if check_backend(backend) == "rust" else None
@@ -150,7 +151,7 @@ class BPETokenizer:
         return json.dumps({"merges": [list(p) for p in self.merges]})
 
     @classmethod
-    def from_json(cls, blob: str, *, backend: Backend = "python") -> BPETokenizer:
+    def from_json(cls, blob: str, *, backend: Backend = "rust") -> BPETokenizer:
         """Load a tokenizer from :meth:`to_json` output."""
 
         data = json.loads(blob)
