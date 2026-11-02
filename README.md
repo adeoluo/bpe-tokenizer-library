@@ -261,6 +261,18 @@ Training the byte-level BPE, then encoding text with it.
   <img src="docs/demo/train-encode.gif" alt="Training the byte-level BPE, then encoding text with it" width="860">
 </p>
 
+The HTTP service: encode, decode, and compression statistics.
+
+<p align="center">
+  <img src="docs/demo/http.gif" alt="The HTTP service: encode, decode, and compression statistics" width="860">
+</p>
+
+Byte-level encoding of accented text, CJK, and emoji, with a lossless round trip.
+
+<p align="center">
+  <img src="docs/demo/unicode.gif" alt="Byte-level encoding of accented text, CJK, and emoji, with a lossless round trip" width="860">
+</p>
+
 ## Design decisions
 
 - **Byte-level, not character-level**: operating on bytes through a reversible mapping makes the
