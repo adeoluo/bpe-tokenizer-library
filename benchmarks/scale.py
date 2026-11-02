@@ -2,9 +2,9 @@
 
 Trains once, then encodes held-out passages of increasing size and reports
 wall-clock time, encode throughput, peak memory, and the lossless round-trip
-check. This is a pure-Python encoder, so the throughput measures how the
-implementation scales, not competitive wall-clock speed against a compiled
-tokenizer such as tiktoken. Deterministic and offline; run with:
+check, using the Python backend. The throughput measures how the implementation
+scales; benchmarks/compare.py compares wall-clock speed with the Rust backend
+and tiktoken. Deterministic and offline; run with:
 
     uv run python benchmarks/scale.py
 """
@@ -22,8 +22,8 @@ def main() -> None:
     tokenizer = BPETokenizer.train(sample_corpus(), vocab_size=600)
     passage = held_out_text()
     print(
-        "BPE encode at scale (pure-Python; throughput measures scaling, "
-        "not competitive wall-clock speed against a compiled tokenizer):"
+        "BPE encode at scale (Python backend; throughput measures scaling, "
+        "see benchmarks/compare.py for the Rust backend):"
     )
     for multiplier in (200, 1000, 4000, 10000):
         text = passage * multiplier

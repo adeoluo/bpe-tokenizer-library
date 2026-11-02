@@ -1,0 +1,26 @@
+[package]
+name = "bpe-tokenizer-rs"
+version = "0.2.0"
+edition = "2021"
+description = "Rust core of bpe-tokenizer-library: byte-level BPE (GPT-2 algorithm) with Python bindings"
+license = "MIT"
+authors = ["Adeolu Ogunnoiki"]
+repository = "https://github.com/adeoluo/bpe-tokenizer-library"
+publish = false
+
+[lib]
+name = "bpe_tokenizer_rs"
+crate-type = ["cdylib", "rlib"]
+
+[features]
+default = []
+# Enabled by maturin (see pyproject.toml). Plain `cargo test` builds the pure
+# Rust core without linking against Python.
+python = ["dep:pyo3"]
+
+[dependencies]
+pyo3 = { version = "0.30", optional = true, features = ["abi3-py311"] }
+
+[profile.release]
+lto = true
+codegen-units = 1

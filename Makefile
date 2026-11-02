@@ -1,4 +1,5 @@
-.PHONY: help setup lint format type test coverage evaluation run diagram docker-build docker-up clean all
+.PHONY: help setup lint format type test coverage evaluation run diagram docker-build docker-up clean all \
+	rust-check rust-develop parity bench-compare
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
@@ -30,6 +31,19 @@ evaluation: ## Reproduce the results table
 
 run: ## Run the HTTP service
 	uv run python -m bpe_tokenizer_library serve
+
+rust-check: ## Rust core: fmt, clippy, unit tests
+	cd rust && cargo fmt --check && cargo clippy --all-targets -- -D warnings && cargo test
+
+rust-develop: ## Build the Rust extension into .venv (opt-in rust group)
+	uv sync --group rust
+	uv run --no-sync maturin develop --uv --release -m rust/Cargo.toml
+
+parity: ## Rust vs Python parity tests (requires rust-develop)
+	BPE_REQUIRE_RUST=1 uv run --no-sync pytest tests/test_rust_parity.py tests/test_backend.py
+
+bench-compare: ## Encode throughput: Python vs Rust vs tiktoken (requires rust-develop)
+	uv run --no-sync python benchmarks/compare.py
 
 diagram: ## Render architecture diagram to SVG
 	mmdc -i docs/architecture/architecture.mmd \
