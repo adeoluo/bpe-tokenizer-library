@@ -26,7 +26,6 @@ Key modules:
 - `rust/src/tokenizer.rs`: Encoding and decoding with an ordered merge list.
 - `rust/src/trainer.rs`: Training merges, identical to the Python `train_bpe`.
 - `rust/src/unicode_tables/mod.rs`: Character-class tables, one per Unicode version of the Python `re` module.
-- `rust/src/unicode_tables/u14_0_0.rs`
 - `rust/src/unicode_tables/u15_0_0.rs`
 - `rust/src/unicode_tables/u15_1_0.rs`
 - `rust/src/unicode_tables/u16_0_0.rs`

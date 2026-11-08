@@ -12,7 +12,7 @@
 //! version, so `\s`, `\d`, and the letter class agree with the interpreter on
 //! every code point.
 
-use crate::unicode_tables::{default_table, ClassTable};
+use crate::unicode_tables::{ClassTable, default_table};
 
 /// The four classes that partition every Unicode scalar value.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -68,10 +68,10 @@ fn match_at(text: &str, start: usize, table: ClassTable) -> usize {
     let mut chars = rest.char_indices();
     let (_, first) = chars.next().expect("start is before the end");
 
-    if first == '\'' {
-        if let Some(word) = CONTRACTIONS.iter().find(|w| rest.starts_with(**w)) {
-            return word.len();
-        }
+    if first == '\''
+        && let Some(word) = CONTRACTIONS.iter().find(|w| rest.starts_with(**w))
+    {
+        return word.len();
     }
 
     // ` ?X+` for X in letters, digits, other: the optional space is taken
@@ -183,11 +183,11 @@ mod tests {
 
     #[test]
     fn tables_follow_their_unicode_version() {
-        // U+1E030 (Cyrillic modifier letter) was added in Unicode 15.0.
-        let old = crate::unicode_tables::table_for("14.0.0").unwrap();
-        let new = crate::unicode_tables::table_for("15.0.0").unwrap();
-        assert_eq!(classify_with('\u{1E030}', old), CharClass::Other);
-        assert_eq!(classify_with('\u{1E030}', new), CharClass::Letter);
+        // U+A7CE (Latin capital letter pharyngeal voiced fricative) was added in Unicode 17.0.
+        let old = crate::unicode_tables::table_for("16.0.0").unwrap();
+        let new = crate::unicode_tables::table_for("17.0.0").unwrap();
+        assert_eq!(classify_with('\u{A7CE}', old), CharClass::Other);
+        assert_eq!(classify_with('\u{A7CE}', new), CharClass::Letter);
         assert!(crate::unicode_tables::table_for("1.0.0").is_none());
     }
 
