@@ -4,24 +4,24 @@
 
 use crate::pretokenize::CharClass;
 
-mod u14_0_0;
 mod u15_0_0;
 mod u15_1_0;
 mod u16_0_0;
+mod u17_0_0;
 
 /// A sorted list of `(first, last, class)` code point ranges.
 pub type ClassTable = &'static [(u32, u32, CharClass)];
 
 /// Every supported Unicode version with its table, oldest first.
 pub static TABLES: &[(&str, ClassTable)] = &[
-    ("14.0.0", &u14_0_0::CLASS_RANGES),
     ("15.0.0", &u15_0_0::CLASS_RANGES),
     ("15.1.0", &u15_1_0::CLASS_RANGES),
     ("16.0.0", &u16_0_0::CLASS_RANGES),
+    ("17.0.0", &u17_0_0::CLASS_RANGES),
 ];
 
 /// The newest supported Unicode version, used when none is requested.
-pub const UNICODE_VERSION: &str = "16.0.0";
+pub const UNICODE_VERSION: &str = "17.0.0";
 
 /// Return the table for `version`, or `None` if it is not supported.
 pub fn table_for(version: &str) -> Option<ClassTable> {

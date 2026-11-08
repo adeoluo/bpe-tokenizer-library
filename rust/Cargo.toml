@@ -1,7 +1,7 @@
 [package]
 name = "bpe-tokenizer-rs"
 version = "0.2.0"
-edition = "2021"
+edition = "2024"
 description = "Rust core of bpe-tokenizer-library: byte-level BPE (GPT-2 algorithm) with Python bindings"
 license = "MIT"
 authors = ["Adeolu Ogunnoiki"]
@@ -19,8 +19,8 @@ default = []
 python = ["dep:pyo3"]
 
 [dependencies]
-pyo3 = { version = "0.30", optional = true, features = ["abi3-py311"] }
-rayon = "1.10"
+pyo3 = { version = "0.30.1", optional = true, features = ["abi3-py312"] }
+rayon = "1.12"
 
 [profile.release]
 lto = true

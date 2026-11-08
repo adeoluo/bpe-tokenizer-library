@@ -18,4 +18,4 @@ mod python;
 pub use pretokenize::{pretokenize, pretokenize_with};
 pub use tokenizer::{DecodeError, Tokenizer};
 pub use trainer::{train_bpe, train_bpe_with};
-pub use unicode_tables::{table_for, UNICODE_VERSION};
+pub use unicode_tables::{UNICODE_VERSION, table_for};

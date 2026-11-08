@@ -7,7 +7,7 @@
 <p align="center">
   <a href="https://github.com/adeoluo/bpe-tokenizer-library/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/adeoluo/bpe-tokenizer-library/actions/workflows/ci.yml/badge.svg"></a>
   <a href="https://github.com/adeoluo/bpe-tokenizer-library/releases"><img alt="Release" src="https://img.shields.io/github/v/release/adeoluo/bpe-tokenizer-library"></a>
-  <img alt="Python" src="https://img.shields.io/badge/python-3.11%20%7C%203.12-blue">
+  <img alt="Python" src="https://img.shields.io/badge/python-3.12%20%7C%203.13%20%7C%203.14%20%7C%203.15-blue">
   <img alt="Rust" src="https://img.shields.io/badge/rust-stable-orange">
   <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-green"></a>
 </p>
@@ -149,8 +149,8 @@ The strings are the bundled corpus, the round-trip battery, 8,000 seeded random 
 (half spanning the full code point range), 4,000 seeded strings built from whitespace,
 contraction, underscore, digit, emoji, and multi-script fragments, and 200 long chunks that
 exercise the heap merge path. Python's `re` classifies characters with the Unicode database of
-the running interpreter, so the extension ships one generated table per version (Unicode 14.0,
-15.0, 15.1, 16.0; Python 3.11 through 3.14) and the suite passed under each. On any other
+the running interpreter, so the extension ships one generated table per version (Unicode 15.0,
+15.1, 16.0, 17.0; Python 3.12 through 3.15) and the suite passed under each. On any other
 interpreter the tokenizer stays on the Python backend rather than risk a difference.
 
 ### Lossless on inputs that break naive tokenizers

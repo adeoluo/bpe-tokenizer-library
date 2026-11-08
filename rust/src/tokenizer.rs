@@ -6,7 +6,7 @@ use std::fmt;
 
 use crate::bytelevel::{glyphs_to_bytes, table};
 use crate::pretokenize::pretokenize_each;
-use crate::unicode_tables::{default_table, ClassTable};
+use crate::unicode_tables::{ClassTable, default_table};
 
 /// Chunks with at least this many bytes use the heap-based merge loop; shorter
 /// chunks use the direct scan, which is faster for them. Both pick the same
@@ -131,10 +131,10 @@ impl Tokenizer {
         while symbols.len() >= 2 {
             let mut best: Option<(u32, usize, u32)> = None;
             for i in 0..symbols.len() - 1 {
-                if let Some((rank, merged)) = self.rank(symbols[i], symbols[i + 1]) {
-                    if best.is_none_or(|(best_rank, _, _)| rank < best_rank) {
-                        best = Some((rank, i, merged));
-                    }
+                if let Some((rank, merged)) = self.rank(symbols[i], symbols[i + 1])
+                    && best.is_none_or(|(best_rank, _, _)| rank < best_rank)
+                {
+                    best = Some((rank, i, merged));
                 }
             }
             let Some((_, index, merged)) = best else {
@@ -176,15 +176,15 @@ impl Tokenizer {
             if next[left] < n {
                 prev[next[left]] = left;
             }
-            if let Some(p) = prev.get(left).copied().filter(|&p| p < n) {
-                if let Some((r, _)) = self.rank(symbols[p], symbols[left]) {
-                    heap.push(Reverse((r, p)));
-                }
+            if let Some(p) = prev.get(left).copied().filter(|&p| p < n)
+                && let Some((r, _)) = self.rank(symbols[p], symbols[left])
+            {
+                heap.push(Reverse((r, p)));
             }
-            if next[left] < n {
-                if let Some((r, _)) = self.rank(symbols[left], symbols[next[left]]) {
-                    heap.push(Reverse((r, left)));
-                }
+            if next[left] < n
+                && let Some((r, _)) = self.rank(symbols[left], symbols[next[left]])
+            {
+                heap.push(Reverse((r, left)));
             }
         }
         let mut out = Vec::with_capacity(n);

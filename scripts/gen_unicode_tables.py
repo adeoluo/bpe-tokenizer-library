@@ -8,7 +8,7 @@ asks ``re`` itself how each code point is classified and writes the result as
 sorted ranges, one table per Unicode version. Run it once with every supported
 interpreter:
 
-    for v in 3.11 3.12 3.13 3.14; do
+    for v in 3.12 3.13 3.14 3.15; do
         uv run --no-project --python "$v" python scripts/gen_unicode_tables.py
     done
 

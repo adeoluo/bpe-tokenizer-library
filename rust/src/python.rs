@@ -4,7 +4,7 @@ use pyo3::exceptions::{PyKeyError, PyValueError};
 use pyo3::prelude::*;
 
 use crate::tokenizer::Tokenizer;
-use crate::unicode_tables::{default_table, table_for, ClassTable, TABLES};
+use crate::unicode_tables::{ClassTable, TABLES, default_table, table_for};
 
 /// Resolve an optional Unicode version to its character-class table.
 fn classes(unicode_version: Option<&str>) -> PyResult<ClassTable> {
