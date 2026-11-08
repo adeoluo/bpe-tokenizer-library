@@ -6,8 +6,8 @@ abstract: "A byte-level BPE tokenizer implementing the GPT-2 algorithm, with a R
 authors:
   - family-names: "Ogunnoiki"
     given-names: "Adeolu"
-version: "0.4.0"
-date-released: "2026-11-02"
+version: "0.4.1"
+date-released: "2026-11-08"
 license: MIT
 repository-code: "https://github.com/adeoluo/bpe-tokenizer-library"
 url: "https://github.com/adeoluo/bpe-tokenizer-library"
