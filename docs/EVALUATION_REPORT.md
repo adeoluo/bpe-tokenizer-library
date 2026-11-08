@@ -62,7 +62,7 @@ tiktoken uses its own GPT-2 vocabulary, so its column is a throughput reference 
 `tests/test_rust_parity.py` compares the backends on 12,223 strings (bundled corpus, round-trip
 battery, seeded random Unicode, adversarial fragments, long chunks) against four merge sets, every
 Unicode scalar value through the pre-tokenizer, 3,000 random id sequences through the decoder,
-and nine training runs. All outputs were identical under Python 3.11, 3.12, 3.13, and 3.14.
+and nine training runs. All outputs were identical under Python 3.12, 3.13, 3.14 and 3.15.
 
 ## Reproducibility
 

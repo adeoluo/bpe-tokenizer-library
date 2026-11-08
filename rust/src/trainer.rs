@@ -13,7 +13,7 @@ use std::cmp::{Ordering, Reverse};
 use std::collections::{BinaryHeap, HashMap, HashSet};
 
 use crate::pretokenize::pretokenize_each;
-use crate::unicode_tables::{default_table, ClassTable};
+use crate::unicode_tables::{ClassTable, default_table};
 
 type Pair = (u32, u32);
 
