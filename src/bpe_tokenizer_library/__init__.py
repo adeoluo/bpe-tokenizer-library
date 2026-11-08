@@ -17,7 +17,7 @@ from bpe_tokenizer_library.pretokenize import pretokenize
 from bpe_tokenizer_library.tokenizer import BPETokenizer
 from bpe_tokenizer_library.trainer import train_bpe
 
-__version__ = "0.4.0"
+__version__ = "0.4.1"
 
 __all__ = [
     "BPETokenizer",
