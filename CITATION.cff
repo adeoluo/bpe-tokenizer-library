@@ -1,11 +1,24 @@
 cff-version: 1.2.0
-message: "If you use this work, please cite it."
-abstract: "A byte-level byte-pair-encoding tokenizer implementing the GPT-2 algorithm, with a reference Python implementation and an optional Rust core (PyO3) that produces identical token ids."
-title: "Bpe Tokenizer Library"
+message: "If you use this software, please cite it as below."
+type: software
+title: "BPE Tokenizer Library"
+abstract: "A byte-level BPE tokenizer implementing the GPT-2 algorithm, with a Rust core (PyO3) used by default that matches its Python reference token for token; lossless for any input and faster than tiktoken in batch."
 authors:
   - family-names: "Ogunnoiki"
     given-names: "Adeolu"
-version: 0.2.0
-date-released: 2026-11-01
+version: "0.4.0"
+date-released: "2026-11-02"
 license: MIT
+repository-code: "https://github.com/adeoluo/bpe-tokenizer-library"
 url: "https://github.com/adeoluo/bpe-tokenizer-library"
+keywords:
+  - "bpe"
+  - "byte-pair-encoding"
+  - "gpt-2"
+  - "language-model"
+  - "nlp"
+  - "python"
+  - "tokenizer"
+  - "pyo3"
+  - "rust"
+  - "from-scratch"
