@@ -30,12 +30,16 @@ def main() -> None:
             f"({report.token_count} tokens), lossless={is_lossless(tok)}, "
             f"trained in {train_ms:.0f} ms"
         )
-    tok = BPETokenizer.train(corpus, vocab_size=600)
-    tp = encode_throughput(tok, text, repeats=200)
-    print(
-        f"Encode throughput (vocab 600): {tp.bytes_per_second:,.0f} bytes/sec, "
-        f"{tp.tokens_per_second:,.0f} tokens/sec"
-    )
+    for backend in ("python", "rust"):
+        tok = BPETokenizer.train(corpus, vocab_size=600, backend=backend)
+        if tok.backend != backend:
+            print(f"Encode throughput ({backend} backend): not available")
+            continue
+        tp = encode_throughput(tok, text, repeats=200)
+        print(
+            f"Encode throughput (vocab 600, {backend} backend): "
+            f"{tp.bytes_per_second:,.0f} bytes/sec, {tp.tokens_per_second:,.0f} tokens/sec"
+        )
 
 
 if __name__ == "__main__":

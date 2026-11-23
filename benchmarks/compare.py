@@ -70,8 +70,10 @@ def main() -> None:
     import tiktoken
 
     merges = BPETokenizer.train(sample_corpus(), 1000, backend="rust").merges
-    python = BPETokenizer.from_merges(merges)
+    python = BPETokenizer.from_merges(merges, backend="python")
     rust = BPETokenizer.from_merges(merges, backend="rust")
+    # The default backend is Rust, so the Python column must ask for Python by name.
+    assert (python.backend, rust.backend) == ("python", "rust"), (python.backend, rust.backend)
     gpt2 = tiktoken.get_encoding("gpt2")
 
     print(f"{platform.machine()} {platform.system()}, Python {platform.python_version()}")

@@ -15,8 +15,8 @@
 ## Out-of-scope / prohibited use
 - Not a drop-in for GPT-2's exact vocabulary unless its published merges are loaded; by default it
   reproduces the algorithm, not that specific table.
-- The Python backend encodes at roughly one megabyte per second; the default Rust backend is 13 to
-  19 times faster on the bundled benchmark but is built from source or from a release wheel.
+- The Python backend encodes at roughly 2 to 5 megabytes per second; the default Rust backend is 12 to
+  16 times faster on the bundled benchmark but is built from source or from a release wheel.
 
 ## Performance
 - Lossless round-trip on an adversarial battery at every vocabulary size.

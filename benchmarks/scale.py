@@ -19,7 +19,8 @@ from bpe_tokenizer_library.tokenizer import BPETokenizer
 
 
 def main() -> None:
-    tokenizer = BPETokenizer.train(sample_corpus(), vocab_size=600)
+    tokenizer = BPETokenizer.train(sample_corpus(), vocab_size=600, backend="python")
+    assert tokenizer.backend == "python", tokenizer.backend
     passage = held_out_text()
     print(
         "BPE encode at scale (Python backend; throughput measures scaling, "

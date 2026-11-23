@@ -47,7 +47,7 @@ Because it is byte-level, it round-trips **any** string exactly, including emoji
 and non-Latin scripts, which tokenizers that split on characters cannot guarantee.
 
 Encoding and training run on a Rust core, exposed through PyO3 and compiled into the package
-on install, so it is what every user gets. It encodes 13 to 19 times faster than the Python
+on install, so it is what every user gets. It encodes 12 to 16 times faster than the Python
 implementation and is tested to produce byte-for-byte identical output; the Python version is kept
 as the readable reference that the Rust core is checked against.
 
@@ -103,14 +103,16 @@ control whitespace, empty) **exactly**.
 ### Encode throughput: Python, Rust, tiktoken
 
 > Reproduce with `uv sync --group rust`, `uv run maturin develop --uv --release -m rust/Cargo.toml`,
-> then `uv run python benchmarks/compare.py`. Apple M1, macOS, Python 3.13, single thread, best of
-> five runs on about 1 MB of text. The machine was shared and under load during the run, so the
-> absolute figures are conservative; the ratios are the stable part.
+> then `uv run python benchmarks/compare.py`. Apple M1, macOS, Python 3.12, single thread, best of
+> five runs on about 1 MB of text. Absolute figures move with machine load (an earlier run on a
+> busier machine measured about a quarter of these); the ratios are the stable part. The script
+> asserts that the Python column really runs the Python backend: the default backend is Rust,
+> and until this was pinned the script timed Rust in both columns.
 
 | Workload | Python backend | Rust backend | tiktoken (gpt2) | Rust / Python |
 |---|---:|---:|---:|---:|
-| English text, 1 MB | 0.47 MB/s | 8.85 MB/s | 8.88 MB/s | 19x |
-| Random Unicode, 1 MB | 1.22 MB/s | 15.45 MB/s | 5.14 MB/s | 13x |
+| English text, 1 MB | 2.03 MB/s | 32.96 MB/s | 31.03 MB/s | 16x |
+| Random Unicode, 1 MB | 4.60 MB/s | 53.27 MB/s | 22.35 MB/s | 12x |
 
 The Python and Rust columns use the same merges (vocabulary 493) and return identical token ids;
 the benchmark asserts this before timing. tiktoken runs its own GPT-2 vocabulary of 50,257 tokens,
@@ -200,14 +202,15 @@ the class of defect cannot recur. See [the pre-tokenizer notes](src/bpe_tokenize
 
 | Input size | Encode time | Throughput | Tokens | Peak memory | Lossless |
 |---|---:|---:|---:|---:|:--:|
-| 23,200 bytes | 0.08 s | ~300,000 bytes/s | 6,200 | 0.3 MiB | yes |
-| 116,000 bytes | 0.39 s | ~301,000 bytes/s | 31,000 | 1.5 MiB | yes |
-| 464,000 bytes | 1.68 s | ~277,000 bytes/s | 124,000 | 5.8 MiB | yes |
-| 1,160,000 bytes | 4.44 s | ~261,000 bytes/s | 310,000 | 14.5 MiB | yes |
+| 23,200 bytes | 0.06 s | ~414,000 bytes/s | 6,200 | 0.3 MiB | yes |
+| 116,000 bytes | 0.28 s | ~419,000 bytes/s | 31,000 | 1.5 MiB | yes |
+| 464,000 bytes | 1.10 s | ~423,000 bytes/s | 124,000 | 5.8 MiB | yes |
+| 1,160,000 bytes | 2.74 s | ~423,000 bytes/s | 310,000 | 14.5 MiB | yes |
 
 Encode throughput stays roughly constant per byte and memory grows linearly with input size, and
 the round trip stays lossless at over a megabyte of input. This table measures how the Python
-implementation scales; for wall-clock speed see the throughput comparison above.
+implementation scales, with `tracemalloc` switched on (which slows it about fivefold); for
+wall-clock speed see the throughput comparison above.
 
 ### Evaluation
 
@@ -283,7 +286,7 @@ encoding.
 A standard-library HTTP service trains once at startup, then encodes and decodes text. The routing
 logic is a pure function, tested without a socket. Under a concurrent stress benchmark
 (`uv run python benchmarks/stress.py`, 10000 requests, 8 workers) the `/encode` handler sustains
-roughly **6,200 requests/second** at **p50 0.11 ms, p95 0.23 ms**.
+roughly **69,000 requests/second** at **p50 0.006 ms, p95 0.45 ms** on the default Rust backend.
 
 | Method | Path | Purpose |
 |---|---|---|
@@ -368,8 +371,8 @@ BPE_REQUIRE_RUST=1 uv run pytest tests/test_rust_parity.py   # after maturin dev
   accordingly. Training on a larger corpus continues to improve it.
 - Installing from source compiles the Rust core, so it needs a Rust toolchain; prebuilt wheels
   are attached to releases for macOS arm64 only.
-- The Python backend, kept as the reference and fallback, runs at roughly one megabyte per second
-  or less.
+- The Python backend, kept as the reference and fallback, runs at roughly 2 to 5 megabytes per second
+  on an idle Apple M1 and well under 1 on a busy one.
 - Rust parity depends on a generated character table per Unicode version. A new Python release
   with a newer Unicode database uses the Python backend until a table is generated for it
   (`scripts/gen_unicode_tables.py`).
