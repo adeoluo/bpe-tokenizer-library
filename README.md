@@ -16,7 +16,7 @@
 
 > **Evidence level: publicly benchmarked.** Token-for-token parity with its Python reference, trained on 100 MB of C4 and compared with tiktoken. Not independently reproduced and not used in production. [What the levels mean](https://github.com/adeoluo#evidence-levels).
 
-## Summary
+## Highlights
 
 Before an AI model reads text, a tokenizer chops the text into small pieces. This is the same
 kind of tokenizer GPT-2 uses, built from scratch.
