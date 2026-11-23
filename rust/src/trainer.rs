@@ -117,8 +117,8 @@ pub fn train_bpe_with<S: AsRef<str>>(
 
     let mut names: Vec<String> = Vec::new();
     let mut ids: HashMap<String, u32> = HashMap::new();
-    for byte in 0..256usize {
-        let glyph = glyphs.glyph_of_byte[byte].to_string();
+    for (byte, &glyph_char) in glyphs.glyph_of_byte.iter().enumerate() {
+        let glyph = glyph_char.to_string();
         ids.insert(glyph.clone(), byte as u32);
         names.push(glyph);
     }
