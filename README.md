@@ -16,6 +16,24 @@
 
 > **Evidence level: publicly benchmarked.** Token-for-token parity with its Python reference, trained on 100 MB of C4 and compared with tiktoken. Not independently reproduced and not used in production. [What the levels mean](https://github.com/adeoluo#evidence-levels).
 
+## In plain English
+
+Before an AI model reads text, a tokenizer chops the text into small pieces. This is the same
+kind of tokenizer GPT-2 uses, built from scratch.
+
+- **It learns fast.** It builds a GPT-2 sized vocabulary (50,257 pieces) from 100 MB of text
+  in 6.7 seconds.
+- **It beats OpenAI's tiktoken on batches.** 68.5 MB per second against 52.4 MB per second
+  on 8 threads.
+- **It never loses text.** Any input comes back exactly, including emoji and non-Latin
+  scripts.
+- **The fast version matches the simple one.** The Rust core and the readable Python version
+  produce the same tokens.
+
+**Where it falls short:** on a single thread it is level with tiktoken (within 3%), not
+ahead. Its slightly better compression comes partly from being trained on the same kind of
+text it was tested on.
+
 ## Motivation
 
 Every language model starts with a tokenizer, and the one used by GPT-2 and its successors is
