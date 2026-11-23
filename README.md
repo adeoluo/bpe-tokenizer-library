@@ -14,6 +14,8 @@
 
 ---
 
+> **Evidence level: publicly benchmarked.** Token-for-token parity with its Python reference, trained on 100 MB of C4 and compared with tiktoken. Not independently reproduced and not used in production. [What the levels mean](https://github.com/adeoluo#evidence-levels).
+
 ## Motivation
 
 Every language model starts with a tokenizer, and the one used by GPT-2 and its successors is
