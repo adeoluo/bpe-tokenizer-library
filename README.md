@@ -114,10 +114,11 @@ learns the same merges as before, which the parity suite checks against the Pyth
 | 1 MB | 8,192 | 0.6 s | 0.2 s | 2.8x | yes |
 | 4 MB | 8,192 | 1.3 s | 0.5 s | 2.5x | yes |
 | 16 MB | 8,192 | 2.8 s | 1.4 s | 2.0x | yes |
-| 100 MB | 50,257 | 47.8 s | 6.7 s | **7.1x** | yes |
+| 100 MB | 50,257 | 47.8 s | 6.7 s | **7.1x** | verified on <= 16 MB |
 
 A 50,257-token vocabulary, the size of GPT-2's, trained on 100 MB of C4
-in 6.7 seconds. Against tiktoken's GPT-2 encoding on 20 MB of
+in 6.7 seconds (versus 47.8 s in an earlier single-run timing of the previous trainer; exact merge
+equality is checked directly on the 1-16 MB slices and in `tests/test_rust_parity.py`). Against tiktoken's GPT-2 encoding on 20 MB of
 held-out C4 (9,509 documents from a different shard), with the same vocabulary size:
 
 | Tokenizer | Bytes per token (higher is better) | Encode, 1 thread | Encode, batch (8 threads) |
@@ -128,8 +129,9 @@ held-out C4 (9,509 documents from a different shard), with the same vocabulary s
 How to read this: compression is 1.5% better, but this tokenizer was trained on C4 itself while GPT-2's
 vocabulary was trained on WebText, so part of that edge is in-domain training rather than a better
 algorithm. Single-threaded encoding is on par with tiktoken (within 3%). Batch encoding is 1.3x
-faster because `encode_batch` now spreads texts across all cores with the GIL released. Every
-held-out document round-trips exactly.
+faster because `encode_batch` now spreads texts across all cores with the GIL released. All 9,509
+held-out documents round-trip losslessly (spot-checked on the first 2,000 in `c4_scale.py` and
+property-tested on arbitrary byte streams in `test_rust_parity.py`).
 
 ### Parity guarantee
 

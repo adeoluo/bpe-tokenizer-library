@@ -108,7 +108,7 @@ def main() -> None:
         path.write_text(json.dumps(c4_slice(args.c4, mb)))
         new = train_subprocess(path, args.scaling_vocab, None)
         old = train_subprocess(path, args.scaling_vocab, args.old_ext) if args.old_ext else None
-        same = old is None or old["merges"] == new["merges"]
+        same: bool | None = None if old is None else (old["merges"] == new["merges"])
         row = {
             "mb": mb,
             "new_s": new["seconds"],
@@ -118,10 +118,8 @@ def main() -> None:
         scaling.append(row)
         old_cell = f"{old['seconds']:.1f} s" if old else "n/a"
         speed = f"{old['seconds'] / new['seconds']:.0f}x" if old else "n/a"
-        print(
-            f"| {mb:g} MB | {old_cell} | {new['seconds']:.1f} s | {speed} | "
-            f"{'yes' if same else 'NO'} |"
-        )
+        same_cell = "n/a" if same is None else ("yes" if same else "NO")
+        print(f"| {mb:g} MB | {old_cell} | {new['seconds']:.1f} s | {speed} | {same_cell} |")
     report["scaling"] = scaling
 
     path = work / "train_full.json"
@@ -143,7 +141,7 @@ def main() -> None:
     gpt2_tokens = sum(
         len(ids) for ids in gpt2.encode_ordinary_batch(held, num_threads=os.cpu_count())
     )
-    assert all(tok.decode(tok.encode(t)) == t for t in held[:2000]), "round trip failed"
+    assert all(tok.decode(tok.encode(t)) == t for t in held), "round trip failed"
 
     ours_single = best_of(lambda: [tok.encode(t) for t in held])
     gpt2_single = best_of(lambda: [gpt2.encode_ordinary(t) for t in held])
