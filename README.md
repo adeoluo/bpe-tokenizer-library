@@ -14,7 +14,7 @@
 
 ---
 
-> **Evidence level: publicly benchmarked.** The Rust core gives the same tokens as its Python reference. The tokenizer was trained on 100 MB of C4 web text and compared with tiktoken. No one else has reproduced the results, and the library is not used in production. [What the levels mean](https://github.com/adeoluo#evidence-levels).
+> **Evidence level: publicly benchmarked.** The Rust core gives the same tokens as its Python reference. The tokenizer was trained on 100 MB of C4 web text and compared with tiktoken. No one else has reproduced the results, and the library is not used in production.
 
 ## Highlights
 
